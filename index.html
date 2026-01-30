@@ -3,116 +3,240 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Grupo de Estudo</title>
+  <title>Grupo de Estudo - Gerenciador</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
+  <!-- Sistema de Notificações Toast -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Modal de Confirmação -->
+  <div id="modal-overlay" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modal-title"></h3>
+        <button id="modal-close" class="modal-close" aria-label="Fechar">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="modal-message"></p>
+      </div>
+      <div class="modal-footer">
+        <button id="modal-cancel" class="btn btn-secondary">Cancelar</button>
+        <button id="modal-confirm" class="btn btn-primary">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
   <main class="app">
-    <header class="topo">
-      <h1>📚 Grupo de Estudo</h1>
-      <p class="sub">Controle de livros, encontros e presença</p>
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <div class="header-title">
+          <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+          <div>
+            <h1>Grupo de Estudo</h1>
+            <p class="subtitle">Gerenciador de livros, encontros e presença</p>
+          </div>
+        </div>
+      </div>
     </header>
 
-    <section class="card dados">
-  <h2>🧰 Backup e dados</h2>
-  <p class="small">
-    Baixe um backup do seu grupo ou carregue um arquivo .json para restaurar. (Ao importar, substitui tudo.)
-  </p>
+    <!-- Seção de Backup -->
+    <section class="card card-backup">
+      <div class="card-header">
+        <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        <h2>Backup e Dados</h2>
+      </div>
+      <p class="card-description">
+        Faça backup dos seus dados ou restaure de um arquivo anterior
+      </p>
 
-  <div class="linha">
-    <button id="btn-export" type="button">Baixar backup</button>
+      <div class="button-group">
+        <button id="btn-export" type="button" class="btn btn-secondary">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          Exportar Backup
+        </button>
 
-    <button id="btn-import" type="button" class="btn-sec">Carregar backup</button>
-    <input id="file-import" type="file" accept="application/json" style="display:none;" />
+        <button id="btn-import" type="button" class="btn btn-secondary">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Importar Backup
+        </button>
+        <input id="file-import" type="file" accept=".json,application/json" style="display:none;" />
 
-    <button id="btn-clear" type="button" class="btn-del">Limpar dados</button>
-  </div>
-</section>
+        <button id="btn-clear" type="button" class="btn btn-danger">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          Limpar Tudo
+        </button>
+      </div>
+    </section>
 
-
-    <!-- 1) LIVROS -->
-    <section class="card livros">
-      <h2>📖 Livros estudados</h2>
-
-      <form id="form-livro" class="linha">
-        <label class="campo">
-          <span>Nome do livro:</span>
-          <input id="livro-nome" type="text" placeholder="Ex.: O custo do discipulado" />
-        </label>
-
-        <button type="submit">Adicionar</button>
-      </form>
-
-      <div class="linha">
-        <label class="campo">
-          <span>Livro atual</span>
-          <select id="livro-atual"></select>
-        </label>
-
-        <span id="livro-atual-info" class="badge"></span>
+    <!-- Seção de Livros -->
+    <section class="card card-books">
+      <div class="card-header">
+        <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+        </svg>
+        <h2>Livros Estudados</h2>
       </div>
 
-      <ul id="lista-livros" class="lista"></ul>
+      <form id="form-livro" class="form-inline">
+        <div class="form-group">
+          <label for="livro-nome">Nome do livro</label>
+          <input 
+            id="livro-nome" 
+            type="text" 
+            placeholder="Ex.: O custo do discipulado"
+            class="input-text"
+          />
+        </div>
+        <button type="submit" class="btn btn-primary">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Adicionar
+        </button>
+      </form>
+
+      <div class="current-book-selector">
+        <label for="livro-atual" class="form-label">Livro atual do grupo</label>
+        <div class="select-wrapper">
+          <select id="livro-atual" class="select"></select>
+        </div>
+        <span id="livro-atual-info" class="badge badge-info"></span>
+      </div>
+
+      <div class="divider"></div>
+
+      <ul id="lista-livros" class="list"></ul>
     </section>
 
-    <!-- 2) NOVO EVENTO -->
-    <section class="card criar-evento">
-      <h2>🗓️ Criar evento</h2>
+    <!-- Seção de Criar Evento -->
+    <section class="card card-event">
+      <div class="card-header">
+        <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        <h2>Criar Evento</h2>
+      </div>
 
-      <form id="form-evento" class="coluna">
-        <div class="linha">
-          <label class="campo">
-            <span>Data</span>
-            <input id="evento-data" type="date" />
-          </label>
+      <form id="form-evento" class="form-vertical">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="evento-data">Data do encontro</label>
+            <input id="evento-data" type="date" class="input-text" />
+          </div>
 
-          <label class="campo">
-            <span>Capítulos (texto livre)</span>
-            <input id="evento-capitulos" type="text" placeholder="Ex.: 1-3 e 5 / Cap. 7 e 8" />
-          </label>
+          <div class="form-group">
+            <label for="evento-capitulos">Capítulos estudados</label>
+            <input 
+              id="evento-capitulos" 
+              type="text" 
+              placeholder="Ex.: 1-3, 5 ou Cap. 7 e 8"
+              class="input-text"
+            />
+          </div>
         </div>
 
-        <label class="campo">
-          <span>Temas centrais</span>
-          <textarea id="evento-temas" rows="3" placeholder="Ex.: Discipulado, renúncia, custo da fé..."></textarea>
-        </label>
-
-        <div class="divisor"></div>
-
-        <h3 class="mini">✅ Presença</h3>
-
-        <div class="linha">
-          <label class="campo">
-            <span>Nome</span>
-            <input id="presenca-nome" type="text" placeholder="Ex.: Elder" />
-          </label>
-
-          <label class="check">
-            <input id="presenca-visitante" type="checkbox" />
-            Visitante
-          </label>
-
-          <button id="btn-add-presenca" type="button">Adicionar</button>
+        <div class="form-group">
+          <label for="evento-temas">Temas centrais</label>
+          <textarea 
+            id="evento-temas" 
+            rows="3" 
+            placeholder="Ex.: Discipulado, renúncia, custo da fé..."
+            class="textarea"
+          ></textarea>
         </div>
 
-        <ul id="lista-presenca-temp" class="lista"></ul>
+        <div class="divider"></div>
 
-        <div class="linha fim">
-  <button id="btn-cancelar-edicao" type="button" class="btn-sec" style="display:none;">
-    Cancelar edição
-  </button>
+        <h3 class="section-title">
+          <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="8.5" cy="7" r="4"></circle>
+            <line x1="20" y1="8" x2="20" y2="14"></line>
+            <line x1="23" y1="11" x2="17" y2="11"></line>
+          </svg>
+          Lista de Presença
+        </h3>
 
-  <button id="btn-salvar-evento" type="submit">Salvar evento</button>
-</div>
+        <div class="form-inline">
+          <div class="form-group">
+            <label for="presenca-nome">Nome</label>
+            <input 
+              id="presenca-nome" 
+              type="text" 
+              placeholder="Ex.: João Silva"
+              class="input-text"
+            />
+          </div>
 
+          <label class="checkbox-label">
+            <input id="presenca-visitante" type="checkbox" class="checkbox" />
+            <span>Visitante</span>
+          </label>
+
+          <button id="btn-add-presenca" type="button" class="btn btn-secondary">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Adicionar
+          </button>
+        </div>
+
+        <ul id="lista-presenca-temp" class="list list-compact"></ul>
+
+        <div class="form-actions">
+          <button 
+            id="btn-cancelar-edicao" 
+            type="button" 
+            class="btn btn-secondary"
+            style="display:none;"
+          >
+            Cancelar
+          </button>
+          <button id="btn-salvar-evento" type="submit" class="btn btn-primary">
+            Salvar Evento
+          </button>
+        </div>
       </form>
     </section>
 
-    <!-- 3) EVENTOS SALVOS -->
-    <section class="card eventos-salvos">
-      <h2>📌 Eventos salvos</h2>
-      <ul id="lista-eventos" class="lista"></ul>
+    <!-- Seção de Eventos Salvos -->
+    <section class="card card-events">
+      <div class="card-header">
+        <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <h2>Eventos Salvos</h2>
+      </div>
+
+      <ul id="lista-eventos" class="list"></ul>
     </section>
   </main>
 

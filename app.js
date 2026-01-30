@@ -1,11 +1,162 @@
+// =================== Sistema de Notificações Toast ===================
+const Toast = {
+  container: null,
+  
+  init() {
+    this.container = document.getElementById('toast-container');
+  },
+  
+  show(message, type = 'info', title = '') {
+    if (!this.container) this.init();
+    
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    
+    const icons = {
+      success: '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>',
+      error: '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>',
+      warning: '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>',
+      info: '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>'
+    };
+    
+    const titles = {
+      success: title || 'Sucesso!',
+      error: title || 'Erro!',
+      warning: title || 'Atenção!',
+      info: title || 'Informação'
+    };
+    
+    toast.innerHTML = `
+      ${icons[type]}
+      <div class="toast-content">
+        <div class="toast-title">${titles[type]}</div>
+        <div class="toast-message">${message}</div>
+      </div>
+      <button class="toast-close" aria-label="Fechar">&times;</button>
+      <div class="toast-progress"></div>
+    `;
+    
+    this.container.appendChild(toast);
+    
+    // Animação de entrada
+    setTimeout(() => toast.style.opacity = '1', 10);
+    
+    // Botão de fechar
+    const closeBtn = toast.querySelector('.toast-close');
+    closeBtn.addEventListener('click', () => this.remove(toast));
+    
+    // Auto-remover após 5 segundos
+    setTimeout(() => this.remove(toast), 5000);
+  },
+  
+  remove(toast) {
+    toast.classList.add('removing');
+    setTimeout(() => toast.remove(), 300);
+  },
+  
+  success(message, title) {
+    this.show(message, 'success', title);
+  },
+  
+  error(message, title) {
+    this.show(message, 'error', title);
+  },
+  
+  warning(message, title) {
+    this.show(message, 'warning', title);
+  },
+  
+  info(message, title) {
+    this.show(message, 'info', title);
+  }
+};
+
+// Inicializar Toast
+Toast.init();
+
+// =================== Sistema de Modal ===================
+const Modal = {
+  overlay: null,
+  resolveCallback: null,
+  
+  init() {
+    this.overlay = document.getElementById('modal-overlay');
+    const closeBtn = document.getElementById('modal-close');
+    const cancelBtn = document.getElementById('modal-cancel');
+    const confirmBtn = document.getElementById('modal-confirm');
+    
+    // Fechar ao clicar no overlay
+    this.overlay.addEventListener('click', (e) => {
+      if (e.target === this.overlay) this.close(false);
+    });
+    
+    // Botão X
+    closeBtn.addEventListener('click', () => this.close(false));
+    
+    // Botão Cancelar
+    cancelBtn.addEventListener('click', () => this.close(false));
+    
+    // Botão Confirmar
+    confirmBtn.addEventListener('click', () => this.close(true));
+    
+    // ESC para fechar
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.overlay.classList.contains('active')) {
+        this.close(false);
+      }
+    });
+  },
+  
+  show(title, message, options = {}) {
+    if (!this.overlay) this.init();
+    
+    return new Promise((resolve) => {
+      this.resolveCallback = resolve;
+      
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-message').textContent = message;
+      
+      const confirmBtn = document.getElementById('modal-confirm');
+      const cancelBtn = document.getElementById('modal-cancel');
+      
+      // Configurar texto dos botões
+      confirmBtn.textContent = options.confirmText || 'Confirmar';
+      cancelBtn.textContent = options.cancelText || 'Cancelar';
+      
+      // Configurar estilo do botão de confirmação
+      confirmBtn.className = 'btn ' + (options.danger ? 'btn-danger' : 'btn-primary');
+      
+      this.overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    });
+  },
+  
+  close(result) {
+    this.overlay.classList.remove('active');
+    document.body.style.overflow = '';
+    
+    if (this.resolveCallback) {
+      this.resolveCallback(result);
+      this.resolveCallback = null;
+    }
+  },
+  
+  async confirm(title, message, options = {}) {
+    return await this.show(title, message, options);
+  }
+};
+
+// Inicializar Modal
+Modal.init();
+
 // =================== Storage ===================
 const STORAGE_KEY = "grupo_estudo_v1";
 
 function load() {
   const base = {
-    books: [],           // {id, name}
-    currentBookId: null, // string
-    events: []           // {id, bookId, date, chaptersText, themes, attendance: [{id,name,isVisitor}]}
+    books: [],
+    currentBookId: null,
+    events: []
   };
 
   const raw = localStorage.getItem(STORAGE_KEY);
@@ -31,14 +182,19 @@ let state = load();
 
 // =================== Helpers ===================
 function id() {
-  return Date.now().toString();
+  return Date.now().toString() + Math.random().toString(36).substr(2, 9);
 }
 
 function bookById(bookId) {
   return state.books.find(b => b.id === bookId) || null;
 }
 
-// ✅ Separado: membros e visitantes (por livro)
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const [year, month, day] = dateStr.split('-');
+  return `${day}/${month}/${year}`;
+}
+
 function attendanceStatsByBookSeparated(bookId) {
   const membrosMap = new Map();
   const visitantesMap = new Map();
@@ -88,52 +244,47 @@ const listaPresencaTemp = document.querySelector("#lista-presenca-temp");
 
 const listaEventos = document.querySelector("#lista-eventos");
 
-// ✅ Botões do modo edição (do HTML novo)
 const btnSalvarEvento = document.querySelector("#btn-salvar-evento");
 const btnCancelarEdicao = document.querySelector("#btn-cancelar-edicao");
 
-// ===== Backup/Import =====
 const btnExport = document.querySelector("#btn-export");
 const btnImport = document.querySelector("#btn-import");
 const fileImport = document.querySelector("#file-import");
 const btnClear = document.querySelector("#btn-clear");
 
-
 // =================== Estado de edição ===================
-let attendanceTemp = [];       // presença temporária do formulário
-let editingEventId = null;     // quando não for null, estamos editando
+let attendanceTemp = [];
+let editingEventId = null;
 
 function startEdit(eventId) {
   const ev = state.events.find(e => e.id === eventId);
-  if (!ev) return alert("Evento não encontrado.");
+  if (!ev) {
+    Toast.error("Evento não encontrado.");
+    return;
+  }
 
   editingEventId = ev.id;
 
-  // muda livro atual pra ser o do evento (pra não confundir)
   state.currentBookId = ev.bookId;
   save(state);
 
-  // preenche form
   eventoData.value = ev.date || "";
   eventoCapitulos.value = ev.chaptersText || "";
   eventoTemas.value = ev.themes || "";
 
-  // carrega presença do evento pra lista temporária
   attendanceTemp = Array.isArray(ev.attendance) ? ev.attendance.map(p => ({ ...p })) : [];
   renderAttendanceTemp();
 
-  // UI de edição
   btnSalvarEvento.textContent = "Atualizar evento";
-  btnCancelarEdicao.style.display = "inline-block";
+  btnCancelarEdicao.style.display = "inline-flex";
 
-  // rola até o formulário (opcional, ajuda UX)
   formEvento.scrollIntoView({ behavior: "smooth", block: "start" });
+  Toast.info("Modo de edição ativado. Modifique os campos e clique em 'Atualizar evento'.");
 }
 
 function cancelEdit() {
   editingEventId = null;
 
-  // limpa o form de evento
   eventoData.value = "";
   eventoCapitulos.value = "";
   eventoTemas.value = "";
@@ -143,9 +294,10 @@ function cancelEdit() {
 
   btnSalvarEvento.textContent = "Salvar evento";
   btnCancelarEdicao.style.display = "none";
+  
+  Toast.info("Edição cancelada.");
 }
 
-// Botão cancelar
 btnCancelarEdicao.addEventListener("click", () => {
   cancelEdit();
 });
@@ -155,88 +307,89 @@ function renderBooks() {
   listaLivros.innerHTML = "";
 
   if (state.books.length === 0) {
-    const li = document.createElement("li");
-    li.className = "item";
-    li.textContent = "Nenhum livro cadastrado ainda.";
-    listaLivros.appendChild(li);
+    listaLivros.innerHTML = `
+      <li class="empty-state">
+        <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+        </svg>
+        <p>Nenhum livro cadastrado ainda.<br>Adicione o primeiro livro acima.</p>
+      </li>
+    `;
   } else {
     state.books.forEach(b => {
       const li = document.createElement("li");
-      li.className = "item";
+      li.className = "list-item";
 
-      const topo = document.createElement("div");
-      topo.className = "item-topo";
-
-      const nome = document.createElement("strong");
-      nome.textContent = b.name;
-
-      const actions = document.createElement("div");
-
-      const btnAtual = document.createElement("button");
-      btnAtual.type = "button";
-      btnAtual.className = "btn-sec";
-      btnAtual.textContent = "Definir como atual";
-      btnAtual.onclick = () => {
-        state.currentBookId = b.id;
-        save(state);
-        renderAll();
-      };
-
-      const btnDel = document.createElement("button");
-      btnDel.type = "button";
-      btnDel.className = "btn-del";
-      btnDel.textContent = "Remover";
-      btnDel.onclick = () => {
-        state.books = state.books.filter(x => x.id !== b.id);
-
-        if (state.currentBookId === b.id) state.currentBookId = null;
-
-        // remove eventos desse livro
-        const removedEventIds = state.events.filter(e => e.bookId === b.id).map(e => e.id);
-        state.events = state.events.filter(e => e.bookId !== b.id);
-
-        // se estava editando um evento desse livro, cancela
-        if (editingEventId && removedEventIds.includes(editingEventId)) {
-          cancelEdit();
-        }
-
-        save(state);
-        renderAll();
-      };
-
-      actions.appendChild(btnAtual);
-      actions.appendChild(btnDel);
-
-      topo.appendChild(nome);
-      topo.appendChild(actions);
-
-      const atual = document.createElement("small");
-      atual.textContent = (state.currentBookId === b.id) ? "✅ Livro atual" : "";
-
-      // ✅ Estatística por livro (membros x visitantes)
       const { membros, visitantes } = attendanceStatsByBookSeparated(b.id);
+      const isCurrentBook = state.currentBookId === b.id;
 
-      const statsBox = document.createElement("div");
-      statsBox.className = "stats";
-
-      const membrosLinha = document.createElement("div");
-      membrosLinha.className = "stats-title";
-      membrosLinha.textContent =
-        "Membros: " + (membros.length ? membros.map(m => `${m.name} (${m.count})`).join(", ") : "nenhum");
-
-      const visitantesLinha = document.createElement("div");
-      visitantesLinha.className = "stats-title";
-      visitantesLinha.textContent =
-        "Visitantes: " + (visitantes.length ? visitantes.map(v => `${v.name} (${v.count})`).join(", ") : "nenhum");
-
-      statsBox.appendChild(membrosLinha);
-      statsBox.appendChild(visitantesLinha);
-
-      li.appendChild(topo);
-      if (atual.textContent) li.appendChild(atual);
-      li.appendChild(statsBox);
+      li.innerHTML = `
+        <div class="item-header">
+          <div>
+            <div class="item-title">${b.name}</div>
+            ${isCurrentBook ? '<span class="badge badge-primary">✓ Livro Atual</span>' : ''}
+          </div>
+          <div class="item-actions">
+            ${!isCurrentBook ? `<button class="btn btn-secondary btn-set-current" data-id="${b.id}">Definir como atual</button>` : ''}
+            <button class="btn btn-danger btn-remove-book" data-id="${b.id}">Remover</button>
+          </div>
+        </div>
+        <div class="item-content">
+          <div class="item-row">
+            <span class="item-label">👥 Membros:</span>
+            <span>${membros.length ? membros.map(m => `${m.name} (${m.count})`).join(", ") : "Nenhum registro"}</span>
+          </div>
+          <div class="item-row">
+            <span class="item-label">👤 Visitantes:</span>
+            <span>${visitantes.length ? visitantes.map(v => `${v.name} (${v.count})`).join(", ") : "Nenhum registro"}</span>
+          </div>
+        </div>
+      `;
 
       listaLivros.appendChild(li);
+    });
+
+    // Event listeners para botões
+    document.querySelectorAll('.btn-set-current').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const bookId = btn.dataset.id;
+        state.currentBookId = bookId;
+        save(state);
+        renderAll();
+        const book = bookById(bookId);
+        Toast.success(`"${book.name}" definido como livro atual.`);
+      });
+    });
+
+    document.querySelectorAll('.btn-remove-book').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const bookId = btn.dataset.id;
+        const book = bookById(bookId);
+        
+        const confirmed = await Modal.confirm(
+          'Remover livro',
+          `Tem certeza que deseja remover o livro "${book.name}"? Todos os eventos relacionados também serão removidos.`,
+          { danger: true, confirmText: 'Remover' }
+        );
+        
+        if (confirmed) {
+          state.books = state.books.filter(x => x.id !== bookId);
+
+          if (state.currentBookId === bookId) state.currentBookId = null;
+
+          const removedEventIds = state.events.filter(e => e.bookId === bookId).map(e => e.id);
+          state.events = state.events.filter(e => e.bookId !== bookId);
+
+          if (editingEventId && removedEventIds.includes(editingEventId)) {
+            cancelEdit();
+          }
+
+          save(state);
+          renderAll();
+          Toast.success(`Livro "${book.name}" removido com sucesso.`);
+        }
+      });
     });
   }
 
@@ -245,7 +398,7 @@ function renderBooks() {
 
   const opt0 = document.createElement("option");
   opt0.value = "";
-  opt0.textContent = "— Selecione —";
+  opt0.textContent = "— Selecione um livro —";
   livroAtualSelect.appendChild(opt0);
 
   state.books.forEach(b => {
@@ -257,7 +410,7 @@ function renderBooks() {
   });
 
   const atual = bookById(state.currentBookId);
-  livroAtualInfo.textContent = atual ? `Atual: ${atual.name}` : "Nenhum livro atual";
+  livroAtualInfo.textContent = atual ? `📖 ${atual.name}` : "Nenhum livro selecionado";
 }
 
 // =================== Render Presença Temporária ===================
@@ -265,37 +418,40 @@ function renderAttendanceTemp() {
   listaPresencaTemp.innerHTML = "";
 
   if (attendanceTemp.length === 0) {
-    const li = document.createElement("li");
-    li.className = "item";
-    li.textContent = "Adicione nomes para compor a presença deste evento.";
-    listaPresencaTemp.appendChild(li);
+    listaPresencaTemp.innerHTML = `
+      <li class="empty-state" style="padding: 1rem;">
+        <p style="font-size: 0.875rem; margin: 0;">Nenhuma pessoa adicionada ainda.</p>
+      </li>
+    `;
     return;
   }
 
-  attendanceTemp.forEach(p => {
+  attendanceTemp.forEach((p, index) => {
     const li = document.createElement("li");
-    li.className = "item";
+    li.className = "list-item";
+    
+    li.innerHTML = `
+      <div class="item-header">
+        <div class="item-title" style="font-size: 1rem;">
+          ${p.isVisitor ? '👤' : '👥'} ${p.name}
+          ${p.isVisitor ? '<span class="badge badge-warning">Visitante</span>' : '<span class="badge badge-primary">Membro</span>'}
+        </div>
+        <button class="btn btn-danger btn-remove-attendance" data-index="${index}">Remover</button>
+      </div>
+    `;
 
-    const topo = document.createElement("div");
-    topo.className = "item-topo";
-
-    const nome = document.createElement("span");
-    nome.textContent = p.isVisitor ? `👤 ${p.name} (visitante)` : `🧑 ${p.name}`;
-
-    const btnDel = document.createElement("button");
-    btnDel.type = "button";
-    btnDel.className = "btn-del";
-    btnDel.textContent = "Remover";
-    btnDel.onclick = () => {
-      attendanceTemp = attendanceTemp.filter(x => x.id !== p.id);
-      renderAttendanceTemp();
-    };
-
-    topo.appendChild(nome);
-    topo.appendChild(btnDel);
-
-    li.appendChild(topo);
     listaPresencaTemp.appendChild(li);
+  });
+
+  // Event listeners para remover
+  document.querySelectorAll('.btn-remove-attendance').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const index = parseInt(btn.dataset.index);
+      const person = attendanceTemp[index];
+      attendanceTemp.splice(index, 1);
+      renderAttendanceTemp();
+      Toast.info(`${person.name} removido(a) da lista.`);
+    });
   });
 }
 
@@ -304,112 +460,147 @@ function renderEvents() {
   listaEventos.innerHTML = "";
 
   if (state.events.length === 0) {
-    const li = document.createElement("li");
-    li.className = "item";
-    li.textContent = "Nenhum evento salvo ainda.";
-    listaEventos.appendChild(li);
+    listaEventos.innerHTML = `
+      <li class="empty-state">
+        <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        <p>Nenhum evento registrado ainda.<br>Crie seu primeiro evento acima.</p>
+      </li>
+    `;
     return;
   }
 
-  // mais recente primeiro (por data)
-  const ordenados = [...state.events].sort((a,b) => (b.date || "").localeCompare(a.date || ""));
+  // Ordenar eventos por data (mais recente primeiro)
+  const sortedEvents = [...state.events].sort((a, b) => b.date.localeCompare(a.date));
 
-  ordenados.forEach(e => {
-    const li = document.createElement("li");
-    li.className = "item";
-
-    const topo = document.createElement("div");
-    topo.className = "item-topo";
-
-    const titulo = document.createElement("strong");
-    const livro = bookById(e.bookId);
-    const livroNome = livro ? livro.name : "(livro removido)";
-    titulo.textContent = `🗓️ ${e.date || "sem data"} — ${livroNome}`;
-
-    const actions = document.createElement("div");
-
-    const btnEdit = document.createElement("button");
-    btnEdit.type = "button";
-    btnEdit.className = "btn-sec";
-    btnEdit.textContent = "Editar";
-    btnEdit.onclick = () => startEdit(e.id);
-
-    const btnDel = document.createElement("button");
-    btnDel.type = "button";
-    btnDel.className = "btn-del";
-    btnDel.textContent = "Excluir";
-    btnDel.onclick = () => {
-      // se estava editando esse evento, cancela antes
-      if (editingEventId === e.id) cancelEdit();
-
-      state.events = state.events.filter(x => x.id !== e.id);
-      save(state);
-      renderEvents();
-      renderBooks(); // atualiza estatísticas por livro
-    };
-
-    actions.appendChild(btnEdit);
-    actions.appendChild(btnDel);
-
-    topo.appendChild(titulo);
-    topo.appendChild(actions);
-
-    const chap = document.createElement("div");
-    chap.innerHTML = `<span class="badge">Capítulos: ${e.chaptersText || "-"}</span>`;
-
-    const temas = document.createElement("div");
-    temas.innerHTML = `<small><strong>Temas:</strong> ${e.themes ? e.themes.replaceAll("\n"," / ") : "-"}</small>`;
-
-    const pres = document.createElement("div");
+  sortedEvents.forEach(e => {
+    const book = bookById(e.bookId);
+    const bookName = book ? book.name : "Livro desconhecido";
     const qtd = Array.isArray(e.attendance) ? e.attendance.length : 0;
-    pres.innerHTML = `<small><strong>Presença (${qtd}):</strong> ${
-      qtd ? e.attendance.map(p => p.isVisitor ? `👤 ${p.name}` : `🧑 ${p.name}`).join(", ") : "-"
-    }</small>`;
 
-    li.appendChild(topo);
-    li.appendChild(chap);
-    li.appendChild(temas);
-    li.appendChild(pres);
+    const li = document.createElement("li");
+    li.className = "list-item";
+
+    li.innerHTML = `
+      <div class="item-header">
+        <div>
+          <div class="item-title">${formatDate(e.date)}</div>
+          <span class="badge badge-info">${bookName}</span>
+        </div>
+        <div class="item-actions">
+          <button class="btn btn-secondary btn-edit-event" data-id="${e.id}">Editar</button>
+          <button class="btn btn-danger btn-remove-event" data-id="${e.id}">Remover</button>
+        </div>
+      </div>
+      <div class="item-content">
+        <div class="item-row">
+          <span class="item-label">📖 Capítulos:</span>
+          <span>${e.chaptersText || "-"}</span>
+        </div>
+        <div class="item-row">
+          <span class="item-label">💡 Temas:</span>
+          <span>${e.themes || "-"}</span>
+        </div>
+        <div class="item-row">
+          <span class="item-label">✅ Presença (${qtd}):</span>
+          <span>${qtd ? e.attendance.map(p => `${p.isVisitor ? '👤' : '👥'} ${p.name}`).join(", ") : "-"}</span>
+        </div>
+      </div>
+    `;
 
     listaEventos.appendChild(li);
   });
+
+  // Event listeners
+  document.querySelectorAll('.btn-edit-event').forEach(btn => {
+    btn.addEventListener('click', () => {
+      startEdit(btn.dataset.id);
+    });
+  });
+
+  document.querySelectorAll('.btn-remove-event').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const eventId = btn.dataset.id;
+      const event = state.events.find(e => e.id === eventId);
+      
+      const confirmed = await Modal.confirm(
+        'Remover evento',
+        `Tem certeza que deseja remover o evento de ${formatDate(event.date)}?`,
+        { danger: true, confirmText: 'Remover' }
+      );
+      
+      if (confirmed) {
+        state.events = state.events.filter(e => e.id !== eventId);
+
+        if (editingEventId === eventId) {
+          cancelEdit();
+        }
+
+        save(state);
+        renderEvents();
+        Toast.success("Evento removido com sucesso.");
+      }
+    });
+  });
 }
 
-// =================== Eventos (listeners) ===================
+// =================== Event Listeners ===================
 
 // 1) Adicionar livro
 formLivro.addEventListener("submit", (ev) => {
   ev.preventDefault();
   const name = livroNome.value.trim();
-  if (!name) return alert("Digite o nome do livro.");
+  
+  if (!name) {
+    Toast.warning("Digite o nome do livro.");
+    livroNome.focus();
+    return;
+  }
 
   const exists = state.books.some(b => b.name.toLowerCase() === name.toLowerCase());
-  if (exists) return alert("Esse livro já existe.");
+  if (exists) {
+    Toast.warning("Este livro já foi cadastrado.");
+    return;
+  }
 
   const book = { id: id(), name };
   state.books.push(book);
 
-  // se ainda não tem livro atual, define
   if (!state.currentBookId) state.currentBookId = book.id;
 
   save(state);
   livroNome.value = "";
   livroNome.focus();
   renderAll();
+  Toast.success(`Livro "${name}" adicionado com sucesso!`);
 });
 
-// 2) Selecionar livro atual pelo select
+// 2) Selecionar livro atual
 livroAtualSelect.addEventListener("change", () => {
   const val = livroAtualSelect.value || null;
   state.currentBookId = val;
   save(state);
   renderAll();
+  
+  if (val) {
+    const book = bookById(val);
+    Toast.success(`Livro atual alterado para "${book.name}".`);
+  }
 });
 
-// 3) Adicionar nome na presença (temp)
+// 3) Adicionar pessoa na presença
 btnAddPresenca.addEventListener("click", () => {
   const name = presencaNome.value.trim();
-  if (!name) return alert("Digite um nome para a presença.");
+  
+  if (!name) {
+    Toast.warning("Digite um nome para adicionar à presença.");
+    presencaNome.focus();
+    return;
+  }
 
   attendanceTemp.push({
     id: id(),
@@ -421,26 +612,46 @@ btnAddPresenca.addEventListener("click", () => {
   presencaVisitante.checked = false;
   presencaNome.focus();
   renderAttendanceTemp();
+  Toast.success(`${name} adicionado(a) à lista!`);
 });
 
 // 4) Salvar/Atualizar evento
-formEvento.addEventListener("submit", (ev) => {
+formEvento.addEventListener("submit", async (ev) => {
   ev.preventDefault();
 
-  if (!state.currentBookId) return alert("Selecione um livro atual antes de criar evento.");
+  if (!state.currentBookId) {
+    Toast.error("Selecione um livro atual antes de criar o evento.");
+    return;
+  }
 
   const date = eventoData.value;
   const chaptersText = eventoCapitulos.value.trim();
   const themes = eventoTemas.value.trim();
 
-  if (!date) return alert("Escolha uma data.");
-  if (!chaptersText) return alert("Preencha os capítulos (texto livre).");
-  if (attendanceTemp.length === 0) return alert("Adicione pelo menos 1 nome na presença.");
+  if (!date) {
+    Toast.warning("Escolha uma data para o evento.");
+    eventoData.focus();
+    return;
+  }
+  
+  if (!chaptersText) {
+    Toast.warning("Preencha os capítulos estudados.");
+    eventoCapitulos.focus();
+    return;
+  }
+  
+  if (attendanceTemp.length === 0) {
+    Toast.warning("Adicione pelo menos uma pessoa na presença.");
+    return;
+  }
 
   if (editingEventId) {
-    // ✅ Atualizar evento existente
+    // Atualizar evento existente
     const idx = state.events.findIndex(e => e.id === editingEventId);
-    if (idx < 0) return alert("Evento em edição não foi encontrado.");
+    if (idx < 0) {
+      Toast.error("Evento em edição não foi encontrado.");
+      return;
+    }
 
     state.events[idx] = {
       ...state.events[idx],
@@ -452,13 +663,13 @@ formEvento.addEventListener("submit", (ev) => {
     };
 
     save(state);
-
-    cancelEdit();  // limpa o modo edição
+    cancelEdit();
     renderAll();
+    Toast.success("Evento atualizado com sucesso!");
     return;
   }
 
-  // ✅ Criar novo evento
+  // Criar novo evento
   const event = {
     id: id(),
     bookId: state.currentBookId,
@@ -471,29 +682,31 @@ formEvento.addEventListener("submit", (ev) => {
   state.events.push(event);
   save(state);
 
-  // limpa o formulário do evento
+  eventoData.value = "";
   eventoCapitulos.value = "";
   eventoTemas.value = "";
   attendanceTemp = [];
+  
   renderAttendanceTemp();
   renderEvents();
   renderBooks();
+  
+  Toast.success("Evento criado com sucesso!");
 });
 
+// =================== Backup/Import ===================
+
 function isValidBackup(obj) {
-  // validação simples pra evitar importar arquivo errado
   if (!obj || typeof obj !== "object") return false;
   if (!Array.isArray(obj.books)) return false;
   if (!Array.isArray(obj.events)) return false;
 
-  // valida livros
   for (const b of obj.books) {
     if (!b || typeof b !== "object") return false;
     if (typeof b.id !== "string") return false;
     if (typeof b.name !== "string") return false;
   }
 
-  // valida eventos (mínimo necessário)
   for (const e of obj.events) {
     if (!e || typeof e !== "object") return false;
     if (typeof e.id !== "string") return false;
@@ -511,14 +724,13 @@ function isValidBackup(obj) {
     }
   }
 
-  // currentBookId pode ser null ou string
   if (!(obj.currentBookId === null || typeof obj.currentBookId === "string")) return false;
 
   return true;
 }
 
 function exportBackup() {
-  const data = load(); // pega do localStorage do jeito oficial
+  const data = load();
   const json = JSON.stringify(data, null, 2);
 
   const blob = new Blob([json], { type: "application/json" });
@@ -540,75 +752,71 @@ function exportBackup() {
   a.remove();
 
   URL.revokeObjectURL(url);
+  Toast.success("Backup baixado com sucesso!");
 }
 
-function importBackupFromFile(file) {
+async function importBackupFromFile(file) {
   const reader = new FileReader();
 
-  reader.onload = () => {
+  reader.onload = async () => {
     try {
       const text = String(reader.result || "");
       const obj = JSON.parse(text);
 
       if (!isValidBackup(obj)) {
-        alert("Esse arquivo não parece ser um backup válido do seu projeto.");
+        Toast.error("Arquivo inválido. Certifique-se de que é um backup válido.");
         return;
       }
 
-      const ok = confirm("Importar backup vai SUBSTITUIR todos os dados atuais. Continuar?");
-      if (!ok) return;
+      const confirmed = await Modal.confirm(
+        'Importar backup',
+        'Importar um backup vai SUBSTITUIR todos os dados atuais. Esta ação não pode ser desfeita. Deseja continuar?',
+        { danger: true, confirmText: 'Importar' }
+      );
+      
+      if (!confirmed) return;
 
-      // substitui tudo
       localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
 
-      // se estiver editando evento, cancela (se existir no seu JS de edição)
-      if (typeof cancelEdit === "function") cancelEdit();
+      if (editingEventId) cancelEdit();
 
       state = load();
       renderAll();
 
-      alert("Backup importado com sucesso ✅");
+      Toast.success("Backup importado com sucesso!");
     } catch (err) {
-      alert("Erro ao importar: arquivo JSON inválido.");
+      Toast.error("Erro ao importar: arquivo JSON inválido.");
     }
   };
 
   reader.readAsText(file);
 }
 
-function clearAllData() {
-  const ok = confirm("Tem certeza que quer apagar todos os dados? Essa ação não tem volta.");
-  if (!ok) return;
+async function clearAllData() {
+  const confirmed = await Modal.confirm(
+    'Limpar todos os dados',
+    'Tem certeza que deseja apagar todos os dados? Esta ação não pode ser desfeita.',
+    { danger: true, confirmText: 'Limpar tudo' }
+  );
+  
+  if (!confirmed) return;
 
   localStorage.removeItem(STORAGE_KEY);
 
-  if (typeof cancelEdit === "function") cancelEdit();
+  if (editingEventId) cancelEdit();
 
   state = load();
   renderAll();
+  
+  Toast.success("Todos os dados foram removidos.");
 }
-
-
-// =================== Render Geral ===================
-function renderAll() {
-  state = load();
-  renderBooks();
-  renderAttendanceTemp();
-  renderEvents();
-
-  // garante UI do modo edição
-  btnSalvarEvento.textContent = editingEventId ? "Atualizar evento" : "Salvar evento";
-  btnCancelarEdicao.style.display = editingEventId ? "inline-block" : "none";
-}
-
-renderAll();
 
 btnExport.addEventListener("click", () => {
   exportBackup();
 });
 
 btnImport.addEventListener("click", () => {
-  fileImport.value = ""; // permite importar o mesmo arquivo 2 vezes seguidas
+  fileImport.value = "";
   fileImport.click();
 });
 
@@ -622,3 +830,24 @@ btnClear.addEventListener("click", () => {
   clearAllData();
 });
 
+// =================== Render Geral ===================
+function renderAll() {
+  renderBooks();
+  renderAttendanceTemp();
+  renderEvents();
+
+  btnSalvarEvento.textContent = editingEventId ? "Atualizar evento" : "Salvar evento";
+  btnCancelarEdicao.style.display = editingEventId ? "inline-flex" : "none";
+}
+
+// =================== Inicialização ===================
+renderAll();
+
+// Define data de hoje como padrão
+const today = new Date().toISOString().split('T')[0];
+eventoData.value = today;
+
+// Mensagem de boas-vindas
+setTimeout(() => {
+  Toast.info("Bem-vindo ao Grupo de Estudo! Configure seu primeiro livro para começar.");
+}, 500);
