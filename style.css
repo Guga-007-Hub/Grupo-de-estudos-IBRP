@@ -1,0 +1,251 @@
+/* ===== Base / Paleta ===== */
+:root{
+  /* fundo geral */
+  --bg1: #f6f7fb;
+  --bg2: #eef2ff;
+
+  /* texto */
+  --text: #1f2937;
+  --muted: rgba(31,41,55,.72);
+
+  /* bordas/sombras */
+  --border: rgba(31,41,55,.10);
+  --shadow: 0 10px 30px rgba(31,41,55,.10);
+
+  /* cores por tópico (suaves e saturadas) */
+  --livros: #2F80ED;        /* azul */
+  --evento: #F2994A;        /* laranja */
+  --salvos: #27AE60;        /* verde */
+
+  /* botões */
+  --btn: #2F80ED;
+  --btnText: #ffffff;
+  --btnSecBg: rgba(31,41,55,.08);
+  --btnSecText: #1f2937;
+  --danger: #EB5757;
+}
+
+* { box-sizing: border-box; }
+
+body{
+  margin: 0;
+  font-family: Arial, sans-serif;
+  color: var(--text);
+
+  /* fundo com leve gradiente */
+  background: radial-gradient(1200px 600px at 10% 0%, var(--bg2) 0%, var(--bg1) 55%, #ffffff 120%);
+}
+
+/* ===== Layout ===== */
+.app{
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+}
+
+/* Header com mais presença */
+.topo{
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(47,128,237,.22), rgba(242,153,74,.18), rgba(39,174,96,.16));
+  border: 1px solid var(--border);
+}
+.topo h1{ margin: 0; }
+.sub{ margin: 6px 0 0; color: var(--muted); }
+
+/* ===== Cards ===== */
+.card{
+  border-radius: 14px;
+  padding: 14px;
+  background: rgba(255,255,255,.92);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+/* faixinha colorida no canto (por tópico) */
+.card::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 10px;
+  background: var(--accent, var(--btn));
+}
+
+/* leve “brilho” colorido no fundo do card */
+.card::after{
+  content: "";
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 220px;
+  height: 220px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(47,128,237,.18), transparent 60%);
+  filter: blur(2px);
+}
+
+/* define a cor por tópico */
+.card.livros{ --accent: var(--livros); }
+.card.livros::after{ background: radial-gradient(circle, rgba(47,128,237,.22), transparent 60%); }
+
+.card.criar-evento{ --accent: var(--evento); }
+.card.criar-evento::after{ background: radial-gradient(circle, rgba(242,153,74,.22), transparent 60%); }
+
+.card.eventos-salvos{ --accent: var(--salvos); }
+.card.eventos-salvos::after{ background: radial-gradient(circle, rgba(39,174,96,.22), transparent 60%); }
+
+/* textos */
+.card h2{ margin: 0 0 10px; }
+.mini{ margin: 0; font-size: 1rem; }
+.small{ font-size: .92rem; color: var(--muted); }
+
+/* ===== Form / Inputs ===== */
+.linha{
+  display: flex;
+  gap: 10px;
+  align-items: end;
+  flex-wrap: wrap;
+  position: relative; /* pra ficar acima do brilho */
+  z-index: 1;
+}
+.coluna{
+  display: grid;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
+}
+
+.campo{
+  display: grid;
+  gap: 6px;
+  flex: 1;
+  min-width: 220px;
+}
+.campo span{
+  font-size: .9rem;
+  color: var(--muted);
+}
+
+input, textarea, select{
+  padding: 10px 12px;
+  border: 1px solid rgba(31,41,55,.14);
+  border-radius: 12px;
+  outline: none;
+  background: rgba(255,255,255,.95);
+  transition: border .15s ease, box-shadow .15s ease;
+}
+
+input:focus, textarea:focus, select:focus{
+  border-color: var(--accent, var(--btn));
+  box-shadow: 0 0 0 4px rgba(47,128,237,.18);
+}
+
+/* checkbox “fofinho” */
+.check{
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px dashed rgba(31,41,55,.18);
+  border-radius: 12px;
+  background: rgba(255,255,255,.7);
+}
+
+/* ===== Botões ===== */
+button{
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--accent, var(--btn));
+  color: var(--btnText);
+  cursor: pointer;
+  transition: transform .05s ease, opacity .15s ease;
+}
+
+button:hover{ opacity: .96; }
+button:active{ transform: translateY(1px); }
+
+.btn-sec{
+  background: var(--btnSecBg);
+  color: var(--btnSecText);
+}
+
+.btn-del{
+  background: var(--danger);
+  color: #fff;
+}
+
+.fim{ justify-content: flex-end; }
+
+.divisor{
+  height: 1px;
+  background: rgba(31,41,55,.12);
+  margin: 6px 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* ===== Listas / Itens ===== */
+.lista{
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+  display: grid;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
+}
+
+.item{
+  border: 1px solid rgba(31,41,55,.10);
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(255,255,255,.70);
+  display: grid;
+  gap: 8px;
+}
+
+.item-topo{
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Tags “badge” */
+.badge{
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(47,128,237,.14);
+  color: rgba(31,41,55,.95);
+  font-size: .86rem;
+  border: 1px solid rgba(47,128,237,.18);
+}
+
+/* ===== Estatísticas de presença por livro ===== */
+.stats{
+  margin-top: 8px;
+  display: grid;
+  gap: 6px;
+}
+
+.stats-title{
+  font-size: .9rem;
+  color: var(--muted);
+}
+
+.livros { --accent: var(--livros); }
+.criar-evento { --accent: var(--evento); }
+.eventos-salvos { --accent: var(--salvos); }
+
+.card.dados { --accent: #9B51E0; } /* roxo suave */
+.card.dados::after{
+  background: radial-gradient(circle, rgba(155,81,224,.22), transparent 60%);
+}
+
