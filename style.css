@@ -102,7 +102,7 @@ body {
   font-size: var(--font-size-base);
   line-height: 1.6;
   color: var(--text-primary);
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #f1e8d3 0%, #e4d6b8 100%);
   min-height: 100vh;
   padding: var(--spacing-lg);
 }
@@ -146,8 +146,8 @@ body {
 .header-icon {
   width: 48px;
   height: 48px;
-  color: var(--primary-600);
-  background: var(--primary-50);
+  color: var(--warning-600);
+  background: var(--warning-50);
   padding: var(--spacing-sm);
   border-radius: var(--border-radius);
 }
@@ -173,6 +173,9 @@ body {
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--border-color);
   transition: transform var(--transition-base), box-shadow var(--transition-base);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
 }
 
 .card:hover {
@@ -184,13 +187,12 @@ body {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
-  margin-bottom: var(--spacing-lg);
 }
 
 .card-icon {
   width: 32px;
   height: 32px;
-  color: var(--primary-600);
+  color: var(--warning-600);
   flex-shrink: 0;
 }
 
@@ -204,14 +206,7 @@ body {
 .card-description {
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
-  margin-bottom: var(--spacing-lg);
 }
-
-/* Variações de Cards */
-.card-backup .card-icon { color: var(--info-600); }
-.card-books .card-icon { color: var(--primary-600); }
-.card-event .card-icon { color: var(--warning-600); }
-.card-events .card-icon { color: var(--success-600); }
 
 /* ==================== Formulários ==================== */
 .form-inline {
@@ -355,31 +350,17 @@ body {
   transform: none;
 }
 
-.btn-primary {
-  background: var(--primary-600);
-  color: white;
-}
-
-.btn-primary:hover {
-  background: var(--primary-700);
-}
-
-.btn-secondary {
+.btn-primary,
+.btn-secondary,
+.btn-danger {
   background: var(--secondary-100);
   color: var(--text-primary);
 }
 
-.btn-secondary:hover {
-  background: var(--secondary-200);
-}
-
-.btn-danger {
-  background: var(--danger-500);
-  color: white;
-}
-
+.btn-primary:hover,
+.btn-secondary:hover,
 .btn-danger:hover {
-  background: var(--danger-600);
+  background: var(--secondary-200);
 }
 
 .button-group {
@@ -392,14 +373,12 @@ body {
   display: flex;
   justify-content: flex-end;
   gap: var(--spacing-md);
-  margin-top: var(--spacing-lg);
 }
 
 /* ==================== Divisor ==================== */
 .divider {
   height: 1px;
   background: var(--border-color);
-  margin: var(--spacing-lg) 0;
 }
 
 /* ==================== Seções ==================== */
@@ -416,7 +395,7 @@ body {
 .section-icon {
   width: 24px;
   height: 24px;
-  color: var(--primary-600);
+  color: var(--warning-600);
 }
 
 /* ==================== Listas ==================== */
